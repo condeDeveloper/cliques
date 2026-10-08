@@ -1,0 +1,47 @@
+name: testes
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  testes:
+    runs-on: ${{ matrix.so }}
+
+    strategy:
+      fail-fast: false
+      matrix:
+        so: [ubuntu-latest, windows-latest, macos-latest]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      # O juiz e a DEFINICAO: a maior clique e a maior, e saber que ela e a maior
+      # exige olhar todos os subconjuntos. Clique maxima e um dos vinte e um
+      # problemas da lista de Karp, e e o problema com o pior resultado de
+      # aproximacao que se conhece.
+      #
+      # Ha um SEGUNDO juiz que nao fala de clique nenhuma: a maior clique de um
+      # grafo e o maior conjunto SEM ARESTA do complemento dele.
+      - name: testes
+        run: dotnet test testes/Cliques.Testes/Cliques.Testes.csproj -c Release --nologo -v q
+
+      - name: o algoritmo contra a definicao
+        run: dotnet run --project ferramentas/Medidor/Medidor.csproj -c Release -- definicao
+
+      - name: o grafo de Moon e Moser contra o limite deles
+        run: dotnet run --project ferramentas/Medidor/Medidor.csproj -c Release -- moonmoser
+
+      - name: o pivo contra a falta dele
+        run: dotnet run --project ferramentas/Medidor/Medidor.csproj -c Release -- pivo
+
+      - name: quantas cliques maximais com a densidade crescendo
+        run: dotnet run --project ferramentas/Medidor/Medidor.csproj -c Release -- densidade
+
+      - name: os grafos grandes
+        run: dotnet run --project ferramentas/Medidor/Medidor.csproj -c Release -- grande
